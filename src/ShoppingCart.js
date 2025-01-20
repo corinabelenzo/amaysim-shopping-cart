@@ -1,23 +1,26 @@
-const Catalogue = require('./Catalogue');
 const CartItem = require('./CartItem');
-const BulkPrice = require('./BulkPrice');
-const Freebie = require('./Freebie');
-const MForN = require('./MForN');
-const PromoCode = require('./PromoCode');
+const BulkPrice = require('./pricing-rules/BulkPrice');
+const Freebie = require('./pricing-rules/Freebie');
+const MForN = require('./pricing-rules/MForN');
+const PromoCode = require('./pricing-rules/PromoCode');
+const { products } = require('./constants');
 
 class ShoppingCart {
   constructor(pricingRules = {}) {
     this._items = [];
     this.pricingRules = pricingRules;
     this.promoCodes = [];
+    this.products = products;
   }
-  
+
   add(productCode, promoCode) {
     const cartItem = this._items.find((item) => item.code === productCode);
     if (cartItem) {
       cartItem.quantity += 1;
     } else {
-      this._items.push(new CartItem(productCode));
+      if (this.products[`${productCode}`]) {
+        this._items.push(new CartItem(productCode));
+      } 
     }
 
     if (promoCode && !this.promoCodes.includes(promoCode)) {
@@ -27,28 +30,40 @@ class ShoppingCart {
     }
   }
 
-  total() {
-    let total = 0;
-
-    let discountCatalogue = {};
+  #getDiscounts() {
+    let discounts = {};
     const { mForNRules, bulkPriceRules } = this.pricingRules;
 
-    bulkPriceRules.forEach((bulkPriceRule) => {
-      const discountedProduct = BulkPrice.get(this._items, bulkPriceRule);
-      if (discountedProduct) {
-        discountCatalogue[`${discountedProduct.product}`] = { price: discountedProduct.price };
+    mForNRules.forEach((mForNRule) => {
+      const discountedItem = MForN.apply(this._items, this.products, mForNRule);
+      if (discountedItem) {
+        discounts[`${discountedItem.product}`] = { price: discountedItem.price };
       }
     });
 
-    mForNRules.forEach((mForNRule) => {
-      const discountedProduct = MForN.apply(this._items, mForNRule);
-      if (discountedProduct) {
-        discountCatalogue[`${discountedProduct.product}`] = { price: discountedProduct.price };
+    bulkPriceRules.forEach((bulkPriceRule) => {
+      const discountedItem = BulkPrice.apply(this._items, bulkPriceRule);
+      if (discountedItem) {
+        discounts[`${discountedItem.product}`] = { price: discountedItem.price };
       }
-    })
+    });
 
+    // console.log(discounts);
+    return discounts;
+  }
+
+  #getPrice(item, discounts) {
+    return discounts[`${item.code}`]
+      ? discounts[`${item.code}`].price
+      : this.products[`${item.code}`].price;
+  }
+
+  total() {
+    let total = 0;
+    const discounts = this.#getDiscounts();
+    
     this._items.forEach((item) => {
-      const price = discountCatalogue[`${item.code}`] ? discountCatalogue[`${item.code}`].price : Catalogue[`${item.code}`].price;
+      const price = this.#getPrice(item, discounts);
       const itemTotal = price * item.quantity;
       total = total + itemTotal;
     });
@@ -57,17 +72,26 @@ class ShoppingCart {
       total = PromoCode.apply(total, promoCode, this.pricingRules)
     });
 
-    console.log(total.toFixed(2));
+    console.log(`$ ${total.toFixed(2)}`);
   }
 
-  items() {
+  #getFreebies() {
     let freebies = [];
     const { freebieRules } = this.pricingRules;
     freebieRules.forEach((freebieRule) => {
       const freebie = Freebie.get(this._items, freebieRule);
-      freebies.push(freebie);
+      if (freebie) {
+        freebies.push(freebie);
+      }
     });
-    console.log([...this._items, ...freebies]);
+    return freebies;
+  }
+
+  items() {
+    const freebies = this.#getFreebies();
+    [...this._items, ...freebies].forEach((item) => {
+      console.log(`${item.quantity} x ${this.products[`${item.code}`].name}`);
+    });
   }
 }
 

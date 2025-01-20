@@ -1,5 +1,5 @@
 const self = {
-  get(cartItems, bulkPriceRule) {
+  apply(cartItems, bulkPriceRule) {
     const { product, minimum, price } = bulkPriceRule;
     const item = cartItems.find((item) => item.code === product);
     if (item) {
