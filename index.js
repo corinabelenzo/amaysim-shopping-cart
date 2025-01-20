@@ -16,16 +16,16 @@ const pricingRules = {
 }
 
 // Scenario 1
-// const cart = new ShoppingCart(pricingRules); 
-// cart.add('ult_small');
-// cart.add('ult_small');
-// cart.add('ult_small');
-// cart.add('ult_large');
-// cart.items();
-// cart.total();
+const cart = new ShoppingCart(pricingRules);
+cart.add('ult_small');
+cart.add('ult_small');
+cart.add('ult_small');
+cart.add('ult_large');
+cart.items();
+cart.total();
 
 // Scenario 2
-// const cart = new ShoppingCart(pricingRules); 
+// const cart = new ShoppingCart(pricingRules);
 // cart.add('ult_small');
 // cart.add('ult_small');
 // cart.add('ult_large');
@@ -36,7 +36,7 @@ const pricingRules = {
 // cart.total();
 
 // Scenario 3
-// const cart = new ShoppingCart(pricingRules); 
+// const cart = new ShoppingCart(pricingRules);
 // cart.add('ult_small');
 // cart.add('ult_medium');
 // cart.add('ult_medium');
@@ -44,8 +44,8 @@ const pricingRules = {
 // cart.total();
 
 // Scenario 4
-const cart = new ShoppingCart(pricingRules); 
-cart.add('ult_small');
-cart.add('1gb', 'I<3AMAYSIM');
-cart.items();
-cart.total();
+// const cart = new ShoppingCart(pricingRules);
+// cart.add('ult_small');
+// cart.add('1gb', 'I<3AMAYSIM');
+// cart.items();
+// cart.total();

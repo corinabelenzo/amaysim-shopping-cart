@@ -73,6 +73,7 @@ class ShoppingCart {
     });
 
     console.log(`$ ${total.toFixed(2)}`);
+    return total.toFixed(2);
   }
 
   #getFreebies() {
@@ -89,9 +90,11 @@ class ShoppingCart {
 
   items() {
     const freebies = this.#getFreebies();
-    [...this._items, ...freebies].forEach((item) => {
+    const result = [...this._items, ...freebies];
+    result.forEach((item) => {
       console.log(`${item.quantity} x ${this.products[`${item.code}`].name}`);
     });
+    return result;
   }
 }
 
